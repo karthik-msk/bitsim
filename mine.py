@@ -2,16 +2,19 @@ import hashlib
 import shutil
 import time
 import os
+import sys
 txs = []
+blocks = []
 tx_per_block = 50
 prev_hash = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 total_blocks = 0
-difficulty = 4
+difficulty = 1
 
 if(os.path.exists("blocks")):
     shutil.rmtree("blocks")
 
 os.makedirs("blocks")
+
 def hash256(string):
     return hashlib.sha256(string.encode("utf-8")).hexdigest()
 
@@ -31,9 +34,31 @@ def merkleTree(hashlist):
     return(merkleTree(hashlist))
 
 def create_file(total_blocks, hash, content):
-    filename = "blocks/"+str(total_blocks) + "-" + hash + ".txt"
-    with open(filename, "w") as file:
+    filename = str(total_blocks) + "-" + hash + ".txt"
+    blocks.append(filename)
+    with open("blocks/"+filename, "w") as file:
         file.write(content)
+    
+def verify():
+    print("Verifying validity of the chain...")
+    if(len(blocks) > 1):
+        for i in range(len(blocks)-1):
+            with open("blocks/"+blocks[i], "r") as file:
+                content = file.read()
+                curHash = hash256(content)
+            with open("blocks/"+blocks[i+1], "r") as file:
+                lines = file.readlines()
+                prevHashLine = lines[1]
+                prevHash = prevHashLine.split(" : ")[1].replace("\n","")
+            #print(curHash)
+            #print(prevHash)
+            #print("-------------------")
+            if(curHash!=prevHash):
+                print("BLOCK NUMBER : ", i," HAS BEEN TAMPERED. CHAIN COLLAPSED")
+                sys.exit()
+
+    print("The chain is VALID")
+    time.sleep(1)
 
 def mine(transactions, difficulty, merkleroot):
     global total_blocks, prev_hash
@@ -58,6 +83,7 @@ def mine(transactions, difficulty, merkleroot):
     prev_hash = hash_value
     print("-MINED", block, hash_value)
     create_file(total_blocks-1, hash_value, block)
+    #print(blocks)
 
 while True:
     while True:
@@ -76,6 +102,8 @@ while True:
 
 
     mine(current_transactions, difficulty, merkleroot)
+    verify()
+
     
     with open("confirmed.txt", "a+") as update:
         update.writelines(current_transactions)
