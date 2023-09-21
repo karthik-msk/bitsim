@@ -57,7 +57,7 @@ def verify():
             if(curHash!=prevHash):
                 print("BLOCK NUMBER : ", i," HAS BEEN TAMPERED. CHAIN COLLAPSED")
                 sys.exit()
-    time.sleep(0.5)
+    time.sleep(1)
     print("CHAIN IS VALID")
     time.sleep(1)
 
@@ -96,6 +96,7 @@ while True:
                 transactions_to_verify = con[:tx_per_block]
                 remaining_transactions = con[tx_per_block:]
                 break
+        print("Waiting for adequate transactions...")
     
     with open("unconfirmed_transactions.txt", "w") as file:
         file.writelines(remaining_transactions)
