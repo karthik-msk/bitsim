@@ -34,8 +34,8 @@ def merkleTree(hashlist):
         return(hashlist[0])
     return(merkleTree(hashlist))
 
-def create_file(total_blocks, hash_value, content):
-    filename = str(total_blocks) + "-" + hash_value + ".txt"
+def create_file(block_number, hash_value, content):
+    filename = str(block_number) + "-" + hash_value + ".txt"
     blocks.append(filename)
     with open("chain/"+filename, "w") as file:
         file.write(content)
@@ -51,9 +51,6 @@ def verify():
                 lines = file.readlines()
                 prevHashLine = lines[1]
                 prevHash = prevHashLine.split(" : ")[1].replace("\n","")
-            #print(curHash)
-            #print(prevHash)
-            #print("-------------------")
             if(curHash!=prevHash):
                 print("BLOCK NUMBER : ", i," HAS BEEN TAMPERED. CHAIN COLLAPSED")
                 sys.exit()
@@ -65,17 +62,20 @@ def mine(transactions, difficulty, merkleroot):
     global total_blocks, prev_hash
     new_nonce = -1
     hash_value = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    block = """Block Number : %d\nPrevious Hash : %s\nMerkle Root : %s\nNonce : %d
-    \nTransactions : \n"""%(total_blocks, prev_hash, merkleroot, new_nonce)
-    for i in transactions:
-        block = block+i
+    
+    block = """Block Number : %d\nPrevious Hash : %s\nMerkle Root : %s\nNonce : %d\nTransactions : \n"""%(total_blocks, prev_hash, merkleroot, new_nonce)
+    
+    for tx in transactions:
+        block = block+tx
+
     while hash_value[0:difficulty] != "0"*difficulty:
         #print(block)
         print(hash_value, new_nonce)
         print("-----------------------------------------------------------------------------")
         lines = block.split("\n")
         cur_nonce = lines[3]
-        cur_value = int(cur_nonce.split(":")[1])
+        print("``````````````````", cur_nonce)
+        cur_value = int(cur_nonce.split(" : ")[1])
         new_value = cur_value+1
         new_nonce = "Nonce : "+str(new_value)
         block = block.replace(cur_nonce, new_nonce)
